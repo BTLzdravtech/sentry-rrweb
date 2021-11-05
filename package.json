@@ -1,5 +1,5 @@
 {
-  "name": "@sentry/rrweb",
+  "name": "@btl/rrweb",
   "version": "0.3.1",
   "description": "Integration between sentry and rrweb.",
   "main": "dist/index.js",

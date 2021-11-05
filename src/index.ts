@@ -58,26 +58,29 @@ export default class SentryRRWeb {
       try {
         // short circuit if theres no events to replay
         if (!this.events.length) return;
-        const client = Sentry.getCurrentHub().getClient();
-        const endpoint = self.attachmentUrlFromDsn(
-          client.getDsn(),
-          event.event_id
-        );
-        const formData = new FormData();
-        formData.append(
-          'rrweb',
-          new Blob([JSON.stringify({ events: self.events })], {
-            type: 'application/json',
-          }),
-          'rrweb.json'
-        );
-        fetch(endpoint, {
-          method: 'POST',
-          body: formData,
-        }).catch((ex) => {
-          // we have to catch this otherwise it throws an infinite loop in Sentry
-          console.error(ex);
-        });
+        // send replays only for exceptions tracking
+        if (event.exception !== undefined) {
+          const client = Sentry.getCurrentHub().getClient();
+          const endpoint = self.attachmentUrlFromDsn(
+            client.getDsn(),
+            event.event_id
+          );
+          const formData = new FormData();
+          formData.append(
+            'rrweb',
+            new Blob([JSON.stringify({ events: self.events })], {
+              type: 'application/json',
+            }),
+            'rrweb.json'
+          );
+          fetch(endpoint, {
+            method: 'POST',
+            body: formData,
+          }).catch((ex) => {
+            // we have to catch this otherwise it throws an infinite loop in Sentry
+            console.error(ex);
+          });
+        }
         return event;
       } catch (ex) {
         console.error(ex);
